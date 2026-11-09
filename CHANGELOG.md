@@ -1,0 +1,11 @@
+# Changelog
+
+## 0.1.0a1 — Unreleased
+
+Alpha — under active development. Every alpha release may include breaking changes. Pin exact versions during alpha.
+
+- Initial Cashier-style abstract billable model, ORM storage, migrations, checkout
+  and portal POST views, signed transactional webhook processing, audit and outbox.
+- Host-owned checkout/entity links with PR #2910-compatible explicit reconciliation.
+- Read-only admin, Django 5.2/6.0/6.1 tests and PostgreSQL concurrency CI.
+- Versioned dependency bootstrap, fast orb setup and prepared trusted publishing.
