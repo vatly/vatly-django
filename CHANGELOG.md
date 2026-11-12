@@ -2,6 +2,7 @@
 
 ## 0.1.0a2 — Unreleased
 
+- Depend on `vatly-api-python` and `vatly-fluent-python`; imports are unchanged.
 - Preserve access through cancellation grace periods using Fluent's shared expiry
   mapping in signed webhooks and explicit reconciliation.
 - Refresh pinned SDK/Fluent 0.1.0a2 bootstrap wheels and regression coverage.
