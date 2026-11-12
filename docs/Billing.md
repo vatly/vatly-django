@@ -42,13 +42,16 @@ derive access from the reconciled records or implement their own durable policy.
 
 ## Pending core PR #2910
 
-Before this core change, initial lines can be `subscription_plan` + plan ID.
+Initial lines can be `subscription_plan` + plan ID.
 There is no deterministic initial subscription ID to attach to a billable. The
 result reports `legacy_plan_ids`; it never guesses by customerId/plan/quantity.
-After the change, lines use `subscription` + intended subscription ID. Quantity
-does not multiply IDs, and identical plans can yield distinct subscriptions.
-An intended ID can temporarily404 or never exist for a skipped trial start;
-`pending_subscription_ids` records unresolved IDs without granting access. Trial
+The revised [PR #2910](https://github.com/sandervanhooft/vatlify/pull/2910), still open
+on 2026-11-12, adds nullable `relatedResources.subscriptionId` while preserving
+product references. This alpha does not consume that new field; a separately
+tested package update is required even after core deploys it. Quantity does not
+multiply subscription IDs, and identical plans can yield distinct subscriptions.
+For existing subscription-valued lines, `pending_subscription_ids` records IDs
+that could not be fetched, without granting access. Trial
 AUTH_REQUEST flows can lack order.paid; reconcile the paid checkout's orderId.
 Historical lines are not backfilled. Do not claim a complete live initial
 subscription-to-entity flow until core provides the reference or an explicit host

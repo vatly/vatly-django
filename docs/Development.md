@@ -1,23 +1,23 @@
 # Development, support and release
 
-Python 3.10–3.14; Django5.2 LTS,6.0,6.1 within their Python compatibility ranges.
-CI runs representative supported combinations plus PostgreSQL17 concurrent delivery.
+Python 3.10–3.14; Django 5.2 LTS, 6.0 and 6.1 within their Python compatibility ranges.
+CI runs representative supported combinations plus PostgreSQL 17 concurrent delivery.
 Tests use real ORM migrations + SDK MockTransport + signed local fixtures, no Vatly
 account writes. They cover all event permutations, rollback including outbox/audit,
 duplicate delivery, purchase-key recovery, authorization, CSRF, billing identity,
 status/grace rules and legacy/new subscription references. The isolated built wheel
 test migrates a fresh DB, imports the package, and checks py.typed.
 
-`.agents/setup` provisions pinned uv0.12.9 and Python3.12, syncs the lockfile and
+`.agents/setup` provisions pinned uv 0.12.9 and Python 3.12, syncs the lockfile and
 runs Django system checks. It is executable/idempotent and needs no secrets/services.
 It does not migrate a host application's DB or seed data. `vendor/` pins unmodified
-unpublished dependency wheels; compare SHA256SUMS when refreshing them.
+dependency wheels; compare SHA256SUMS when refreshing them.
 
-PyPI name `vatly-django` returned404 on 2026-11-09 (not a reservation). Import name
-is `vatly_django`, version0.1.0a2. Before any release configure PyPI trusted publisher
+[`vatly-django` 0.1.0a2](https://pypi.org/project/vatly-django/0.1.0a2/) was published
+on 2026-11-12; its import name is `vatly_django`. Keep the PyPI trusted publisher
 owner `vatly`, repo `vatly-django`, workflow `release.yml`; leave the environment
 field blank. No GitHub environment or PyPI token is needed. Restrict repository
 release access: there is no environment approval gate. Publish SDK then Fluent
 then Django. The release workflow builds/checks artifacts and only publishes on a
 published GitHub release whose tag matches `v` plus the package version. No tag or
-publication has been made. PyPI packages are public even if GitHub source is private.
+publication is triggered by pushing main. PyPI packages are public even if GitHub source is private.
