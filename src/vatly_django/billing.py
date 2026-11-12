@@ -20,6 +20,7 @@ from vatly_fluent import (
     FluentError,
     LocalSubscription,
     Vatly,
+    subscription_ends_at,
 )
 
 from .models import BillingResource, BillingScope, Checkout, CheckoutAttempt, CustomerBinding
@@ -198,7 +199,9 @@ class Billing:
                     fields: dict[str, Any] = {
                         "resource": subscription,
                         "entity": entity,
-                        "ends_at": subscription.ended_at or subscription.canceled_at,
+                        "ends_at": subscription_ends_at(
+                            subscription, current_sub.ends_at if current_sub else None
+                        ),
                     }
                     if current_sub:
                         await self.driver.subscriptions.update(subscription.id, fields)

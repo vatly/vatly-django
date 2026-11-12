@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0a2 — Unreleased
+
+- Preserve access through cancellation grace periods using Fluent's shared expiry
+  mapping in signed webhooks and explicit reconciliation.
+- Refresh pinned SDK/Fluent 0.1.0a2 bootstrap wheels and regression coverage.
+
 ## 0.1.0a1 — Unreleased
 
 Alpha — under active development. Every alpha release may include breaking changes. Pin exact versions during alpha.

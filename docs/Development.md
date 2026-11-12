@@ -14,9 +14,10 @@ It does not migrate a host application's DB or seed data. `vendor/` pins unmodif
 unpublished dependency wheels; compare SHA256SUMS when refreshing them.
 
 PyPI name `vatly-django` returned404 on 2026-11-09 (not a reservation). Import name
-is `vatly_django`, version0.1.0a1. Before any release configure PyPI trusted publisher
-owner `vatly`, repo `vatly-django`, workflow `release.yml`, environment `pypi`, with
-required-reviewer protection on that GitHub environment. Publish SDK then Fluent
+is `vatly_django`, version0.1.0a2. Before any release configure PyPI trusted publisher
+owner `vatly`, repo `vatly-django`, workflow `release.yml`; leave the environment
+field blank. No GitHub environment or PyPI token is needed. Restrict repository
+release access: there is no environment approval gate. Publish SDK then Fluent
 then Django. The release workflow builds/checks artifacts and only publishes on a
 published GitHub release whose tag matches `v` plus the package version. No tag or
 publication has been made. PyPI packages are public even if GitHub source is private.

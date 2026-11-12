@@ -236,7 +236,7 @@ def test_bindings_portal_and_cross_scope_ownership(user, mock_api, client):
         billing.subscription_action(user, resource("Subscription")["id"], "resume")
 
 
-def test_subscribed_checks_status_and_exact_grace_boundary(user, mock_api):
+def test_subscribed_checks_status_and_exact_grace_boundary(user, mock_api, client, monkeypatch):
     # Exercise mixin on a concrete model without a bespoke test schema.
     class BillableUser(BillableMixin, get_user_model()):
         class Meta:
@@ -250,13 +250,20 @@ def test_subscribed_checks_status_and_exact_grace_boundary(user, mock_api):
         LocalSubscription(resource=subscription, entity=entity_for(billable))
     )
     assert not billable.subscribed()
-    row = BillingResource.objects.get()
-    row.snapshot["status"] = "on_grace_period"
-    row.ends_at = timezone.now() + timedelta(days=1)
-    row.save()
+    now = timezone.now()
+    expiry = now + timedelta(days=30)
+    grace = resource(
+        "Subscription",
+        status="on_grace_period",
+        canceledAt=(now - timedelta(seconds=5)).isoformat(),
+        endedAt=None,
+        renewedUntil=None,
+        nextRenewalAt=expiry.isoformat(),
+    )
+    assert deliver(client, "subscription.canceled_with_grace_period", grace).status_code == 200
+    assert BillingResource.objects.get().ends_at == expiry
     assert billable.subscribed()
-    row.ends_at = timezone.now() - timedelta(seconds=1)
-    row.save()
+    monkeypatch.setattr(timezone, "now", lambda: expiry)
     assert not billable.subscribed()
 
 
@@ -270,18 +277,29 @@ def test_explicit_reconciliation_distinguishes_initial_ids_and_legacy_plans(user
     legacy.update(productType="subscription_plan", productId="plan_legacy")
     order["lines"][0].update(productType="subscription", productId="subscription_new", quantity=3)
     order["lines"].append(legacy)
+    expiry = timezone.now() + timedelta(days=30)
+    subscription = resource(
+        "Subscription",
+        id="subscription_new",
+        status="on_grace_period",
+        canceledAt=(timezone.now() - timedelta(seconds=5)).isoformat(),
+        endedAt=None,
+        renewedUntil=expiry.isoformat(),
+        nextRenewalAt=None,
+    )
     calls, responses = mock_api
     responses.extend(
         [
             resource("Checkout", id="checkout_owned", orderId="order_owned"),
             order,
-            resource("Subscription", id="subscription_new"),
+            subscription,
         ]
     )
     result = billing.reconcile(user, "checkout_owned")
     assert result.legacy_plan_ids == ("plan_legacy",)
     assert [sub.id for sub in result.subscriptions] == ["subscription_new"]
     assert billing.resources(user).count() == 2
+    assert billing.resources(user, "subscription").get().ends_at == expiry
     assert len(calls) == 3
     outsider = get_user_model().objects.create(username="outsider")
     with pytest.raises(PermissionDenied):
@@ -321,7 +339,12 @@ def test_subscription_mutations_wait_for_signed_cancel_and_resume_refreshes(user
         deliver(
             client,
             "subscription.canceled_with_grace_period",
-            {**sub, "canceledAt": "2027-01-01T00:00:00Z", "status": "on_grace_period"},
+            {
+                **sub,
+                "canceledAt": "2026-11-09T21:19:57Z",
+                "nextRenewalAt": "2027-01-01T00:00:00Z",
+                "status": "on_grace_period",
+            },
         ).status_code
         == 200
     )
