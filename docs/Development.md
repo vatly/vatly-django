@@ -1,6 +1,9 @@
-# Development and release
+---
+title: Development and release
+description: Set up the repository, run checks and build the Django package locally.
+---
 
-Set up the repository, run checks and build the Django package locally.
+# Development and release
 
 ## Set up the repository
 
