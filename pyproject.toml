@@ -18,7 +18,15 @@ Documentation = "https://docs.vatly.com"
 Issues = "https://github.com/vatly/vatly-django/issues"
 
 [dependency-groups]
-dev = ["pytest>=8,<10", "pytest-django>=4.11,<5", "ruff>=0.14,<1", "mypy>=1.18,<2", "django-stubs>=5.2,<7", "twine>=6,<7"]
+dev = [
+    "pytest>=8,<10",
+    "pytest-django>=4.11,<5",
+    "ruff>=0.14,<1",
+    "mypy>=1.18,<2",
+    "django-stubs>=5.2,<7",
+    "twine>=6,<7",
+    "pytest-cov>=7,<8",
+]
 
 [tool.uv.sources]
 vatly-api-python = {path = "vendor/vatly_api_python-0.1.0a2-py3-none-any.whl"}
@@ -49,3 +57,11 @@ files = ["src/vatly_django"]
 
 [tool.django-stubs]
 django_settings_module = "tests.settings"
+
+[tool.coverage.run]
+branch = true
+source = ["vatly_django"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true

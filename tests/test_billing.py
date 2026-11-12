@@ -369,3 +369,68 @@ def test_admin_is_registered_and_read_only(user, rf):
     assert not model_admin.has_add_permission(request)
     assert not model_admin.has_change_permission(request)
     assert not model_admin.has_delete_permission(request)
+
+
+def test_checkout_and_portal_report_upstream_errors_without_persisting_checkout(
+    client, user, mock_api
+):
+    client.force_login(user)
+    calls, responses = mock_api
+    responses.append(httpx.Response(503, json={"message": "maintenance"}))
+    response = client.post("/checkout/book/", {"idempotency_key": uuid4()})
+    assert response.status_code == 502
+    assert b"same purchase key" in response.content
+    assert Checkout.objects.count() == 0
+    assert client.post("/portal/").status_code == 400
+    Billing().bind_customer(user, "customer_a")
+    responses.append(httpx.Response(503, json={"message": "maintenance"}))
+    assert client.post("/portal/").status_code == 502
+    assert len(calls) == 2
+
+
+def test_admin_cannot_modify_any_billing_table(user, rf):
+    from django.apps import apps
+    from django.contrib import admin
+
+    user.is_staff = user.is_superuser = True
+    request = rf.post("/admin/")
+    request.user = user
+    for model in apps.get_app_config("vatly_django").get_models():
+        model_admin = admin.site._registry[model]
+        assert model_admin.has_view_permission(request)
+        assert not model_admin.has_add_permission(request)
+        assert not model_admin.has_change_permission(request)
+        assert not model_admin.has_delete_permission(request)
+
+
+def test_migrations_rebuild_schema_from_zero():
+    from django.db.migrations.executor import MigrationExecutor
+
+    executor = MigrationExecutor(connection)
+    leaves = executor.loader.graph.leaf_nodes("vatly_django")
+    executor.migrate([("vatly_django", None)])
+    assert "vatly_django_checkout" not in connection.introspection.table_names()
+    executor = MigrationExecutor(connection)
+    executor.migrate(leaves)
+    assert "vatly_django_checkout" in connection.introspection.table_names()
+    assert Checkout.objects.count() == 0
+
+
+def test_orm_rejects_resource_identity_and_mode_changes(user):
+    from vatly_fluent import EntityRef
+
+    driver = Billing().driver
+    record = LocalSubscription(
+        resource=Subscription.model_validate(resource("Subscription", id="subscription_a")),
+        entity=entity_for(user),
+    )
+    async_to_sync(driver.subscriptions.store)(record)
+    for changes, message in [
+        ({"entity": EntityRef("auth.user", "outsider")}, "ownership"),
+        ({"resource": record.resource.model_copy(update={"id": "subscription_b"})}, "immutable"),
+        ({"resource": record.resource.model_copy(update={"testmode": False})}, "mode"),
+    ]:
+        with pytest.raises(FluentError, match=message):
+            async_to_sync(driver.subscriptions.update)(record.resource.id, changes)
+    saved = async_to_sync(driver.subscriptions.find_by_vatly_id)(record.resource.id)
+    assert saved == record
