@@ -40,15 +40,13 @@ It can hold the scope lock during bounded GET retries; run it in a background jo
 for busy deployments. It emits no local-created outbox event; consumers should
 derive access from the reconciled records or implement their own durable policy.
 
-## Pending core PR #2910
+## Initial subscription linking
 
 Initial lines can be `subscription_plan` + plan ID.
 There is no deterministic initial subscription ID to attach to a billable. The
 result reports `legacy_plan_ids`; it never guesses by customerId/plan/quantity.
-The revised [PR #2910](https://github.com/sandervanhooft/vatlify/pull/2910), still open
-on 2026-11-12, adds nullable `relatedResources.subscriptionId` while preserving
-product references. This alpha does not consume that new field; a separately
-tested package update is required even after core deploys it. Quantity does not
+This alpha does not consume a related-resources subscription reference; any
+new API reference needs a separately tested package update. Quantity does not
 multiply subscription IDs, and identical plans can yield distinct subscriptions.
 For existing subscription-valued lines, `pending_subscription_ids` records IDs
 that could not be fetched, without granting access. Trial
