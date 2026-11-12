@@ -20,7 +20,7 @@ need a custom user model: the `Billing` facade accepts any saved Django model.
 | --- | --- |
 | [Installation](Installation.md) | Install, connect URLs and run migrations |
 | [Configuration](Configuration.md) | Set credentials, offers and tenant scope |
-| [Billable models](BillableModels.md) | Use existing users or a Cashier-style mixin |
+| [Billable models](BillableModels.md) | Add billing helpers to your user or team model |
 | [Checkout](Checkout.md) | Start a purchase with a durable retry key |
 | [Customer portal](CustomerPortal.md) | Open hosted billing for an authorized customer |
 | [Subscriptions](Billing.md) | Inspect, cancel, resume and reconcile owned subscriptions |

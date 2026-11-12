@@ -2,7 +2,7 @@
 
 **Alpha — under active development. Every alpha release may include breaking changes. Pin exact versions during alpha.**
 
-Cashier-style billing for Django on [Vatly Fluent Python](https://github.com/vatly/vatly-fluent-python).
+Billing helpers for Django user and team models, built on [Vatly Fluent Python](https://github.com/vatly/vatly-fluent-python).
 Vatly is the European merchant of record for AI, software and digital products.
 Python 3.10+; Django 5.2 LTS, 6.0 and 6.1 (6.x requires Python 3.12+).
 
