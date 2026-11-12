@@ -53,3 +53,15 @@ jobs:
       - run: uv sync --locked
       - run: uv pip install 'psycopg[binary]>=3.2,<4'
       - run: uv run --no-sync pytest
+  published-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.12.9'
+          python-version: '3.12'
+      - run: >-
+          uv run --isolated --no-project --default-index https://pypi.org/simple
+          --with 'vatly-django==0.1.0a2' --with 'pytest>=8,<10'
+          --with 'pytest-django>=4.11,<5' python -m pytest -q tests/test_docs.py
