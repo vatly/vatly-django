@@ -9,7 +9,7 @@ description = "Cashier-style Django billing on Vatly Fluent"
 requires-python = ">=3.10"
 readme = "README.md"
 license = "MIT"
-dependencies = ["Django>=5.2,<6.2", "vatly-fluent==0.1.0a2", "vatly-sdk==0.1.0a2"]
+dependencies = ["Django>=5.2,<6.2", "vatly-fluent-python==0.1.0a2", "vatly-api-python==0.1.0a2"]
 classifiers = ["Development Status :: 3 - Alpha", "Framework :: Django", "Typing :: Typed"]
 
 [project.urls]
@@ -21,8 +21,8 @@ Issues = "https://github.com/vatly/vatly-django/issues"
 dev = ["pytest>=8,<10", "pytest-django>=4.11,<5", "ruff>=0.14,<1", "mypy>=1.18,<2", "django-stubs>=5.2,<7", "twine>=6,<7"]
 
 [tool.uv.sources]
-vatly-sdk = {path = "vendor/vatly_sdk-0.1.0a2-py3-none-any.whl"}
-vatly-fluent = {path = "vendor/vatly_fluent-0.1.0a2-py3-none-any.whl"}
+vatly-api-python = {path = "vendor/vatly_api_python-0.1.0a2-py3-none-any.whl"}
+vatly-fluent-python = {path = "vendor/vatly_fluent_python-0.1.0a2-py3-none-any.whl"}
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/vatly_django"]
