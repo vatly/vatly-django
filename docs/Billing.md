@@ -23,6 +23,11 @@ Mixin methods: `checkout`, `billing_portal`, `subscriptions`, `subscribed`,
 queries include only owned resources in the chosen scope/mode. `subscribed()`
 requires active/trial/on_grace_period status and an unexpired local end time; it is
 a convenience policy, not a replacement for your product's entitlement rules.
+Grace expiry comes from Fluent's shared lifecycle mapping, not `canceledAt`
+(the cancellation request time). Missing expiry raises `FluentError` and preserves
+the prior committed state for explicit recovery; do not treat failed/stale syncs
+as evidence of continuing entitlement. See Fluent's subscription guide for period
+field precedence and the missing-deadline policy.
 `Billing.subscription_action` also exposes sync, swap_and_invoice and
 swap_without_charge. It checks local ownership before any API mutation. Cancellation
 waits for signed events to update local state; resume refreshes immediately. Use

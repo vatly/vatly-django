@@ -15,7 +15,7 @@ VATLY_REDIRECT_URL_CANCELED = "https://app.example.com/billing/canceled"
 VATLY_CHECKOUTS = {"pro": {"products": [{"id": "subscription_plan_...", "quantity": 1}]}}
 ```
 
-Install `vatly-django==0.1.0a1` after publication, add
+Install `vatly-django==0.1.0a2` after publication, add
 `path("billing/", include("vatly_django.urls"))`, run `python manage.py migrate`.
 Before publication, clone and run `.agents/setup`; locked uv sources use versioned
 SDK/Fluent wheels from `vendor/` without cross-private-repo credentials.

@@ -1450,7 +1450,7 @@ wheels = [
 
 [[package]]
 name = "vatly-django"
-version = "0.1.0a1"
+version = "0.1.0a2"
 source = { editable = "." }
 dependencies = [
     { name = "django", version = "5.2.19", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
@@ -1473,8 +1473,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=5.2,<6.2" },
-    { name = "vatly-fluent", path = "vendor/vatly_fluent-0.1.0a1-py3-none-any.whl" },
-    { name = "vatly-sdk", path = "vendor/vatly_sdk-0.1.0a1-py3-none-any.whl" },
+    { name = "vatly-fluent", path = "vendor/vatly_fluent-0.1.0a2-py3-none-any.whl" },
+    { name = "vatly-sdk", path = "vendor/vatly_sdk-0.1.0a2-py3-none-any.whl" },
 ]
 
 [package.metadata.requires-dev]
@@ -1489,29 +1489,29 @@ dev = [
 
 [[package]]
 name = "vatly-fluent"
-version = "0.1.0a1"
-source = { path = "vendor/vatly_fluent-0.1.0a1-py3-none-any.whl" }
+version = "0.1.0a2"
+source = { path = "vendor/vatly_fluent-0.1.0a2-py3-none-any.whl" }
 dependencies = [
     { name = "vatly-sdk" },
 ]
 wheels = [
-    { filename = "vatly_fluent-0.1.0a1-py3-none-any.whl", hash = "sha256:f5a94aad91d0e075172a476568933909a3fb5813b7838e6b5a8e6e600272d502" },
+    { filename = "vatly_fluent-0.1.0a2-py3-none-any.whl", hash = "sha256:b49a62e6ca651a351ab57e1c86eaab08670d52ecf18ae1653819441e008651e0" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "vatly-sdk", specifier = "==0.1.0a1" }]
+requires-dist = [{ name = "vatly-sdk", specifier = "==0.1.0a2" }]
 
 [[package]]
 name = "vatly-sdk"
-version = "0.1.0a1"
-source = { path = "vendor/vatly_sdk-0.1.0a1-py3-none-any.whl" }
+version = "0.1.0a2"
+source = { path = "vendor/vatly_sdk-0.1.0a2-py3-none-any.whl" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
 wheels = [
-    { filename = "vatly_sdk-0.1.0a1-py3-none-any.whl", hash = "sha256:6feb18368c0f65cd11e64512dcb555d58c6a6cc65ef3f34e9c828f246d71ed45" },
+    { filename = "vatly_sdk-0.1.0a2-py3-none-any.whl", hash = "sha256:18332147498bef93303b43b88726119eb3ae141fa5921fd04bd355929d8533ac" },
 ]
 
 [package.metadata]
