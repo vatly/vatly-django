@@ -1,4 +1,4 @@
-"""Install the actual wheel outside the checkout, including pinned prerelease dependencies."""
+"""Install the actual wheel outside the checkout; pinned SDK/Fluent resolve from PyPI."""
 
 import pathlib
 import subprocess
@@ -16,7 +16,6 @@ with tempfile.TemporaryDirectory() as tmp:
             "install",
             "--python",
             python,
-            *map(str, (root / "vendor").glob("*.whl")),
             str(next((root / "dist").glob("*.whl"))),
         ],
         check=True,
