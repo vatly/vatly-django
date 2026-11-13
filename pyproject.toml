@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "vatly-django"
 version = "0.1.0a2"
 description = "Billing helpers for Django user and team models, built on Vatly Fluent"
+keywords = ["vatly", "django", "merchant-of-record", "billing", "payments", "subscriptions", "vat", "ai"]
 requires-python = ">=3.10"
 readme = "README.md"
 license = "MIT"
