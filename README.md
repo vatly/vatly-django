@@ -16,7 +16,7 @@ VATLY_REDIRECT_URL_CANCELED = "https://app.example.com/billing/canceled"
 VATLY_CHECKOUTS = {"pro": {"products": [{"id": "subscription_plan_...", "quantity": 1}]}}
 ```
 
-Install `vatly-django==0.1.0a2`, add
+Install `vatly-django==0.1.0a3`, add
 `path("billing/", include("vatly_django.urls"))`, run `python manage.py migrate`.
 For development, clone and run `.agents/setup`; `uv.lock` pins the exact SDK and
 Fluent versions from PyPI.
