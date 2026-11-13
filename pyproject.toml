@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vatly-django"
-version = "0.1.0a2"
+version = "0.1.0a3"
 description = "Billing helpers for Django user and team models, built on Vatly Fluent"
 keywords = ["vatly", "django", "merchant-of-record", "billing", "payments", "subscriptions", "vat", "ai"]
 requires-python = ">=3.10"
 readme = "README.md"
 license = "MIT"
-dependencies = ["Django>=5.2,<6.2", "vatly-fluent-python==0.1.0a2", "vatly-api-python==0.1.0a2"]
+dependencies = ["Django>=5.2,<6.2", "vatly-fluent-python==0.1.0a3", "vatly-api-python==0.1.0a3"]
 classifiers = ["Development Status :: 3 - Alpha", "Framework :: Django", "Typing :: Typed"]
 
 [project.urls]
@@ -29,15 +29,11 @@ dev = [
     "pytest-cov>=7,<8",
 ]
 
-[tool.uv.sources]
-vatly-api-python = {path = "vendor/vatly_api_python-0.1.0a2-py3-none-any.whl"}
-vatly-fluent-python = {path = "vendor/vatly_fluent_python-0.1.0a2-py3-none-any.whl"}
-
 [tool.hatch.build.targets.wheel]
 packages = ["src/vatly_django"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src", "tests", "vendor", "scripts", "docs", "README.md", "CHANGELOG.md", "LICENSE", "pyproject.toml"]
+include = ["src", "tests", "scripts", "docs", "README.md", "CHANGELOG.md", "LICENSE", "pyproject.toml"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.settings"

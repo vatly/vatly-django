@@ -18,8 +18,8 @@ VATLY_CHECKOUTS = {"pro": {"products": [{"id": "subscription_plan_...", "quantit
 
 Install `vatly-django==0.1.0a2`, add
 `path("billing/", include("vatly_django.urls"))`, run `python manage.py migrate`.
-For development, clone and run `.agents/setup`; locked uv sources use versioned
-SDK/Fluent wheels from `vendor/`.
+For development, clone and run `.agents/setup`; `uv.lock` pins the exact SDK and
+Fluent versions from PyPI.
 
 ```python
 from uuid import uuid4
@@ -41,9 +41,10 @@ The mixin is abstract and adds no columns or auth-user coupling.
 - Signed webhooks atomically deduplicate, persist snapshots/links and enqueue outbox events.
 - Read-only admin; CSRF-protected, login-required checkout/portal POST views.
 - Raw SDK and async Fluent remain available for advanced integration.
-- Initial `subscription_plan` lines cannot identify a subscription in this alpha.
-  Revised core PR #2910 adds related-resource correlation; consuming it still needs
-  a package update. `Billing.reconcile` reports legacy IDs instead of guessing access.
+- Initial orders link to their subscriptions through each line's
+  `relatedResources.subscriptionId`. A signed `order.paid` snapshot can carry a null
+  `subscriptionId`; `Billing.reconcile` reports those lines as `unresolved_line_ids`
+  so you can reconcile again later. It never guesses access from a plan or customer.
 
 [Guides for vatly-docs sync](docs/README.md) cover configuration, ownership, transactions,
 outbox delivery, testing and release. No tags/publication are performed by setup or CI.

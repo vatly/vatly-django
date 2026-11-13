@@ -1,7 +1,16 @@
 # Changelog
 
-## Unreleased
+## 0.1.0a3 — 2026-11-13
 
+- Require `vatly-fluent-python==0.1.0a3` and `vatly-api-python==0.1.0a3` from PyPI;
+  drop the vendored bootstrap wheels.
+- Initial orders now link to their subscriptions through
+  `lines[].relatedResources.subscriptionId` in signed `order.paid`/`checkout.paid`
+  webhooks and `Billing.reconcile`.
+- `Billing.reconcile` returns `unresolved_line_ids` for signup lines whose
+  `subscriptionId` is still null; reconcile again later (it may never resolve).
+- Behaviour change: `legacy_plan_ids` now lists only plan lines without
+  `relatedResources` (historical orders), no longer every plan line.
 - Refresh European positioning, installation and published-package documentation.
 
 ## 0.1.0a2 — 2026-11-12

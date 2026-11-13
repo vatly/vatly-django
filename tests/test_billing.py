@@ -88,17 +88,32 @@ def deliver(client, name, obj, event_id=None, testmode=True):
     return client.post("/webhook/", raw, content_type="application/json", HTTP_VATLY_SIGNATURE=sig)
 
 
+# A signup line references its plan and names the subscription in relatedResources;
+# a renewal line references the subscription as its product.
+LINE_SHAPES = {
+    "signup": {
+        "productType": "subscription_plan",
+        "productId": "subscription_plan_pro",
+        "relatedResources": {"subscriptionId": "subscription_owned"},
+    },
+    "renewal": {"productType": "subscription", "productId": "subscription_owned"},
+}
+
+
+@pytest.mark.parametrize("line_shape", LINE_SHAPES)
 @pytest.mark.parametrize(
     "sequence", list(itertools.permutations(["checkout", "order", "subscription"]))
 )
-def test_signed_snapshots_link_from_own_checkout_in_every_order(client, user, mock_api, sequence):
+def test_signed_snapshots_link_from_own_checkout_in_every_order(
+    client, user, mock_api, sequence, line_shape
+):
     billing = Billing()
     async_to_sync(billing.driver.checkouts.record)(
         CheckoutRecord("checkout_owned", entity_for(user), True)
     )
     checkout = resource("Checkout", id="checkout_owned", orderId="order_owned")
     order = resource("Order", id="order_owned")
-    order["lines"][0].update(productType="subscription", productId="subscription_owned", quantity=4)
+    order["lines"][0].update(quantity=4, **LINE_SHAPES[line_shape])
     subscription = resource("Subscription", id="subscription_owned")
     events = {
         "checkout": ("checkout.paid", checkout),
@@ -113,6 +128,11 @@ def test_signed_snapshots_link_from_own_checkout_in_every_order(client, user, mo
     assert WebhookCall.objects.filter(processed_at__isnull=False).count() == 3
     assert deliver(client, *events[sequence[0]]).content == b"duplicate"
     assert Outbox.objects.count() == 5
+    assert set(billing.resources(user).values_list("vatly_id", flat=True)) == {
+        "order_owned",
+        "subscription_owned",
+    }
+    assert not ResourceLink.objects.filter(vatly_id="subscription_plan_pro").exists()
     assert mock_api[0] == []  # Built-ins preserve signed snapshots; zero implicit GETs.
 
 
@@ -267,16 +287,22 @@ def test_subscribed_checks_status_and_exact_grace_boundary(user, mock_api, clien
     assert not billable.subscribed()
 
 
-def test_explicit_reconciliation_distinguishes_initial_ids_and_legacy_plans(user, mock_api):
+def test_explicit_reconciliation_distinguishes_related_ids_unresolved_and_legacy_plans(
+    user, mock_api
+):
     billing = Billing()
     async_to_sync(billing.driver.checkouts.record)(
         CheckoutRecord("checkout_owned", entity_for(user), True)
     )
     order = resource("Order", id="order_owned")
-    legacy = deepcopy(order["lines"][0])
-    legacy.update(productType="subscription_plan", productId="plan_legacy")
-    order["lines"][0].update(productType="subscription", productId="subscription_new", quantity=3)
-    order["lines"].append(legacy)
+    line = order["lines"][0]
+    plan = {**line, "productType": "subscription_plan", "productId": "plan_pro"}
+    order["lines"] = [
+        {**plan, "quantity": 3, "relatedResources": {"subscriptionId": "subscription_new"}},
+        {**plan, "id": "line_unresolved", "relatedResources": {"subscriptionId": None}},
+        # Historical orders carry no relatedResources: plan IDs stay legacy.
+        {**plan, "id": "line_legacy", "productId": "plan_legacy"},
+    ]
     expiry = timezone.now() + timedelta(days=30)
     subscription = resource(
         "Subscription",
@@ -297,13 +323,55 @@ def test_explicit_reconciliation_distinguishes_initial_ids_and_legacy_plans(user
     )
     result = billing.reconcile(user, "checkout_owned")
     assert result.legacy_plan_ids == ("plan_legacy",)
+    assert result.unresolved_line_ids == ("line_unresolved",)
+    assert result.pending_subscription_ids == ()
     assert [sub.id for sub in result.subscriptions] == ["subscription_new"]
+    assert not ResourceLink.objects.filter(vatly_id__startswith="plan_").exists()
     assert billing.resources(user).count() == 2
     assert billing.resources(user, "subscription").get().ends_at == expiry
     assert len(calls) == 3
     outsider = get_user_model().objects.create(username="outsider")
     with pytest.raises(PermissionDenied):
         billing.reconcile(outsider, "checkout_owned")
+
+
+def test_null_subscription_id_in_frozen_order_paid_resolves_on_later_reconcile(
+    client, user, mock_api
+):
+    billing = Billing()
+    async_to_sync(billing.driver.checkouts.record)(
+        CheckoutRecord("checkout_owned", entity_for(user), True)
+    )
+    order = resource("Order", id="order_owned")
+    order["lines"][0].update(
+        id="line_signup",
+        productType="subscription_plan",
+        productId="plan_pro",
+        relatedResources={"subscriptionId": None},
+    )
+    subscription = resource("Subscription", id="subscription_new")
+    assert deliver(client, "order.paid", order).status_code == 200
+    assert deliver(client, "subscription.started", subscription).status_code == 200
+    # The frozen snapshot names no subscription, so nothing grants ownership yet.
+    assert BillingResource.objects.get(vatly_id="subscription_new").entity_id is None
+    assert billing.resources(user, "subscription").count() == 0
+
+    calls, responses = mock_api
+    checkout = resource("Checkout", id="checkout_owned", orderId="order_owned")
+    responses.extend([checkout, order])
+    first = billing.reconcile(user, "checkout_owned")
+    assert first.unresolved_line_ids == ("line_signup",)
+    assert first.subscriptions == () and first.legacy_plan_ids == ()
+    assert billing.resources(user, "subscription").count() == 0
+
+    resolved = deepcopy(order)
+    resolved["lines"][0]["relatedResources"] = {"subscriptionId": "subscription_new"}
+    responses.extend([checkout, resolved, subscription])
+    later = billing.reconcile(user, "checkout_owned")
+    assert later.unresolved_line_ids == ()
+    assert [sub.id for sub in later.subscriptions] == ["subscription_new"]
+    assert billing.resources(user, "subscription").get().vatly_id == "subscription_new"
+    assert len(calls) == 5 and not responses
 
 
 def test_postgres_concurrent_duplicate_delivery_commits_once(mock_api):
