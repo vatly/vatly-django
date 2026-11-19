@@ -1,6 +1,6 @@
 # Vatly Django
 
-**Alpha — under active development. Every alpha release may include breaking changes. Pin exact versions during alpha.**
+**Alpha — under active development. Every alpha release may include breaking changes. Lock the version you install and review the release notes before upgrading.**
 
 Billing helpers for Django user and team models, built on [Vatly Fluent Python](https://github.com/vatly/vatly-fluent-python).
 Vatly is the European Merchant of Record for AI, software and digital products.
@@ -16,7 +16,7 @@ VATLY_REDIRECT_URL_CANCELED = "https://app.example.com/billing/canceled"
 VATLY_CHECKOUTS = {"pro": {"products": [{"id": "subscription_plan_...", "quantity": 1}]}}
 ```
 
-Install `vatly-django==0.1.0a3`, add
+Install the latest alpha with `pip install --pre vatly-django`, add
 `path("billing/", include("vatly_django.urls"))`, run `python manage.py migrate`.
 For development, clone and run `.agents/setup`; `uv.lock` pins the exact SDK and
 Fluent versions from PyPI.
