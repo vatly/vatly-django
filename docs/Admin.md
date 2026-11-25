@@ -23,7 +23,7 @@ who need them; do not give every support user superuser access.
 
 All billing admin registrations disable add/change/delete, even for superusers.
 Use hosted billing or authorized API actions to mutate subscriptions; editing a
-local snapshot would not change Vatly. Signed envelopes can contain personal data,
-so restrict access and apply your retention policy.
+local snapshot would not change Vatly. Outbox payloads contain personal data, so
+restrict access and schedule [`vatly_prune`](Webhooks.md#prune-old-rows).
 
 [Webhook storage](Webhooks.md) · [API reference](https://docs.vatly.com/api-reference)

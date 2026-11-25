@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.0a5 — 2026-11-25
+
+- `WebhookCall.envelope` stores only the event's `id`, `eventName`, `entityType`,
+  `entityId`, `testmode` and `createdAt`, no longer the resource with the customer's
+  details. No migration is needed.
+- New `vatly_prune` management command: deletes webhook calls processed and outbox
+  rows delivered more than `VATLY_RETENTION_DAYS` (default 30) days ago, keeps
+  undelivered outbox rows, and reduces envelopes stored by earlier versions to the
+  event IDs. Schedule it daily, for example from cron.
+
 ## 0.1.0a4 — 2026-11-25
 
 - Require `vatly-fluent-python==0.1.0a4` and `vatly-api-python==0.1.0a4`.

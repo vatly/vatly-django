@@ -12,6 +12,7 @@ import pytest
 from asgiref.sync import async_to_sync
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
+from django.core.management import call_command
 from django.db import close_old_connections, connection
 from django.test import Client
 from django.utils import timezone
@@ -533,3 +534,51 @@ def test_orm_rejects_resource_identity_and_mode_changes(user):
             async_to_sync(driver.subscriptions.update)(record.resource.id, changes)
     saved = async_to_sync(driver.subscriptions.find_by_vatly_id)(record.resource.id)
     assert saved == record
+
+
+def test_webhook_call_keeps_only_event_ids(client, mock_api):
+    obj = resource("Subscription")
+    assert deliver(client, "subscription.started", obj).status_code == 200
+    assert set(WebhookCall.objects.get().envelope) == {
+        "id",
+        "eventName",
+        "entityType",
+        "entityId",
+        "testmode",
+        "createdAt",
+    }
+
+
+def test_vatly_prune_deletes_old_rows_and_reduces_old_envelopes(client, mock_api, settings):
+    assert deliver(client, "subscription.started", resource("Subscription")).status_code == 200
+    scope = WebhookCall.objects.get().scope
+    old = timezone.now() - timedelta(days=31)
+    recent = timezone.now() - timedelta(days=29)
+    full = {"id": "event_full", "eventName": "order.paid", "object": {"customerDetails": {}}}
+    WebhookCall.objects.create(
+        scope=scope, event_id="old", event_name="x", envelope={}, processed_at=old
+    )
+    WebhookCall.objects.create(
+        scope=scope,
+        event_id="event_full",
+        event_name="order.paid",
+        envelope=full,
+        processed_at=recent,
+    )
+    Outbox.objects.update(delivered_at=old)
+    Outbox.objects.create(scope=scope, event_name="pending", payload={})
+    Outbox.objects.create(scope=scope, event_name="recent", payload={}, delivered_at=recent)
+
+    call_command("vatly_prune")
+
+    assert WebhookCall.objects.count() == 2
+    assert not WebhookCall.objects.filter(event_id="old").exists()
+    assert WebhookCall.objects.get(event_id="event_full").envelope == {
+        "id": "event_full",
+        "eventName": "order.paid",
+    }
+    assert set(Outbox.objects.values_list("event_name", flat=True)) == {"pending", "recent"}
+
+    settings.VATLY_RETENTION_DAYS = 0
+    call_command("vatly_prune")
+    assert Outbox.objects.count() == 2

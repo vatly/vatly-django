@@ -24,7 +24,7 @@ with tempfile.TemporaryDirectory() as tmp:
         [
             python,
             "-c",
-            "from importlib.resources import files; from django.conf import settings; settings.configure(INSTALLED_APPS=['vatly_django'], DATABASES={'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': ':memory:'}}); import django; django.setup(); from django.core.management import call_command; call_command('migrate', verbosity=0); from vatly_django.models import BillingScope; assert BillingScope.objects.count() == 0; assert files('vatly_django').joinpath('py.typed').is_file(); print('Isolated wheel, migrations and py.typed OK')",
+            "from importlib.resources import files; from django.conf import settings; settings.configure(INSTALLED_APPS=['vatly_django'], DATABASES={'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': ':memory:'}}); import django; django.setup(); from django.core.management import call_command; call_command('migrate', verbosity=0); from vatly_django.models import BillingScope; assert BillingScope.objects.count() == 0; call_command('vatly_prune', verbosity=0); assert files('vatly_django').joinpath('py.typed').is_file(); print('Isolated wheel, migrations and py.typed OK')",
         ],
         cwd=tmp,
         check=True,
