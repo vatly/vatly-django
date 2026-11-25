@@ -35,6 +35,14 @@ from .models import (
 
 T = TypeVar("T", bound=Stored[Any])
 
+# The keys of the signed envelope kept in WebhookCall.envelope.
+ENVELOPE_KEYS = ("id", "eventName", "entityType", "entityId", "testmode", "createdAt")
+
+
+def envelope_ids(envelope: dict[str, Any]) -> dict[str, Any]:
+    """The envelope without its object, which holds the customer's personal data."""
+    return {key: envelope[key] for key in ENVELOPE_KEYS if key in envelope}
+
 
 @contextmanager
 def locked_scope(scope: BillingScope) -> Iterator[None]:
@@ -225,7 +233,7 @@ class ORMDriver:
                 scope=self.scope,
                 event_id=event.id,
                 event_name=event.event_name,
-                envelope=event.model_dump(mode="json", by_alias=True),
+                envelope=envelope_ids(event.model_dump(mode="json", by_alias=True)),
             )
             async_to_sync(work)()
             row.processed_at = timezone.now()
