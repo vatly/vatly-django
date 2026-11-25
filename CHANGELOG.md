@@ -5,10 +5,10 @@
 - Require `vatly-fluent-python==0.1.0a4` and `vatly-api-python==0.1.0a4`.
 - Stored refund snapshots include `metadata`, the metadata sent when the refund was
   created, or null.
-- `Billing.checkout` checks the configured `VATLY_CHECKOUTS` offer against the API
-  schema and raises `ImproperlyConfigured` before recording a purchase attempt or
-  calling Vatly. Metadata values must be strings (at most 50 keys, keys up to 40 and
-  values up to 500 characters); `trialDays` must be at least 1.
+- A configured `VATLY_CHECKOUTS` offer that breaks the SDK's new request rules
+  (metadata values must be strings, at most 50 keys, keys up to 40 and values up to
+  500 characters; `trialDays` at least 1) raises `FluentError` before calling Vatly,
+  like other invalid offers, and the checkout view answers 400.
 - Behaviour change from the SDK: subscription action keyword arguments are validated
   before sending, so invalid input raises Pydantic's `ValidationError` instead of
   `VatlyValidationError`; fields the API schema does not define are dropped.

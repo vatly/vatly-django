@@ -11,7 +11,7 @@ import httpx
 import pytest
 from asgiref.sync import async_to_sync
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ImproperlyConfigured, PermissionDenied
+from django.core.exceptions import PermissionDenied
 from django.db import close_old_connections, connection
 from django.test import Client
 from django.utils import timezone
@@ -223,13 +223,14 @@ def test_purchase_key_survives_network_failure_and_is_bound_to_payload(user, moc
         {"products": [{"id": "subscription_plan_test", "trialDays": 0}]},
     ],
 )
-def test_invalid_offer_is_a_configuration_error_before_any_request(
+def test_offer_breaking_request_rules_fails_before_any_request(
     client, user, mock_api, settings, offer
 ):
     settings.VATLY_CHECKOUTS = {"book": offer}
-    with pytest.raises(ImproperlyConfigured, match="'book'"):
+    with pytest.raises(FluentError, match="Invalid checkout request"):
         Billing().checkout(user, "book", idempotency_key=uuid4())
-    assert CheckoutAttempt.objects.count() == 0
+    client.force_login(user)
+    assert client.post("/checkout/book/", {"idempotency_key": uuid4()}).status_code == 400
     assert mock_api[0] == []
 
 
