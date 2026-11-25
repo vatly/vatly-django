@@ -12,7 +12,9 @@ from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.db.models import Model, QuerySet
+from pydantic import ValidationError
 from vatly import AsyncVatlyClient, RequestOptions
+from vatly.models import CreateCheckoutRequest
 from vatly_fluent import (
     CheckoutResolution,
     CustomerProfile,
@@ -96,6 +98,10 @@ class Billing:
         )
         if customer_id:
             payload["customerId"] = customer_id
+        try:
+            CreateCheckoutRequest.model_validate(payload)
+        except ValidationError as exc:
+            raise ImproperlyConfigured(f"Invalid VATLY_CHECKOUTS offer {offer!r}") from exc
         fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
         with locked_scope(self.scope):
             attempt, _ = CheckoutAttempt.objects.get_or_create(

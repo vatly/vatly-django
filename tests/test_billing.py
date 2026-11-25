@@ -11,7 +11,7 @@ import httpx
 import pytest
 from asgiref.sync import async_to_sync
 from django.contrib.auth import get_user_model
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.db import close_old_connections, connection
 from django.test import Client
 from django.utils import timezone
@@ -209,10 +209,40 @@ def test_purchase_key_survives_network_failure_and_is_bound_to_payload(user, moc
     assert Checkout.objects.get().entity_id == str(user.pk)
     assert calls[0].headers["Idempotency-Key"] == calls[1].headers["Idempotency-Key"] == str(key)
     assert CheckoutAttempt.objects.get().checkout_id == "checkout_retried"
-    settings.VATLY_CHECKOUTS = {"book": {"products": [{"id": "other", "quantity": 2}]}}
+    settings.VATLY_CHECKOUTS = {"book": {"products": [{"id": "one_off_product_x", "quantity": 2}]}}
     with pytest.raises(FluentError, match="different purchase"):
         billing.checkout(user, "book", idempotency_key=key)
     assert len(calls) == 2
+
+
+@pytest.mark.parametrize(
+    "offer",
+    [
+        {"products": [{"id": "one_off_product_test"}], "metadata": {"n": 1}},
+        {"products": [{"id": "one_off_product_test"}], "metadata": {"k" * 41: "v"}},
+        {"products": [{"id": "subscription_plan_test", "trialDays": 0}]},
+    ],
+)
+def test_invalid_offer_is_a_configuration_error_before_any_request(
+    client, user, mock_api, settings, offer
+):
+    settings.VATLY_CHECKOUTS = {"book": offer}
+    with pytest.raises(ImproperlyConfigured, match="'book'"):
+        Billing().checkout(user, "book", idempotency_key=uuid4())
+    assert CheckoutAttempt.objects.count() == 0
+    assert mock_api[0] == []
+
+
+def test_refund_snapshot_keeps_metadata(client, user, mock_api):
+    billing = Billing()
+    async_to_sync(billing.driver.checkouts.record)(
+        CheckoutRecord("checkout_owned", entity_for(user), True)
+    )
+    async_to_sync(billing.driver.checkouts.link)("checkout_owned", "order", "order_owned")
+    refund = resource("Refund", originalOrderId="order_owned", metadata={"ticket": "T-1"})
+    assert deliver(client, "refund.completed", refund).status_code == 200
+    assert billing.resources(user, "refund").get().snapshot["metadata"] == {"ticket": "T-1"}
+    assert mock_api[0] == []
 
 
 def test_views_authorize_csrf_and_ignore_user_product_overrides(client, user, mock_api):
