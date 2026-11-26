@@ -69,9 +69,9 @@ dependency behavior changes.
 
 Until `add_version_string` ships in released SDK and Fluent versions
 (vatly/vatly-api-python#5, vatly/vatly-fluent-python#5), `[tool.uv.sources]` points
-`uv` at those commits for development and CI. Package metadata still pins the
-`0.1.0a4` releases from PyPI, where the Django token is skipped. Once both are
-released, remove the sources, pin the releases, and run `uv lock`.
+`uv` at their merge commits on `main` for development and CI. Package metadata still
+pins the `0.1.0a4` releases from PyPI, where the Django token is skipped. Once both
+are released, remove the sources, pin the releases, and run `uv lock`.
 
 ## Prepare a release
 

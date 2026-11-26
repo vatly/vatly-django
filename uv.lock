@@ -1733,7 +1733,7 @@ wheels = [
 [[package]]
 name = "vatly-api-python"
 version = "0.1.0a4"
-source = { git = "https://github.com/vatly/vatly-api-python?rev=75a1816c049afc7b90e8f1f205de28a1bb0458ff#75a1816c049afc7b90e8f1f205de28a1bb0458ff" }
+source = { git = "https://github.com/vatly/vatly-api-python?rev=9535226f050cee0bec75a495babde4b90a8fc30f#9535226f050cee0bec75a495babde4b90a8fc30f" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
@@ -1766,8 +1766,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=5.2,<6.2" },
-    { name = "vatly-api-python", git = "https://github.com/vatly/vatly-api-python?rev=75a1816c049afc7b90e8f1f205de28a1bb0458ff" },
-    { name = "vatly-fluent-python", git = "https://github.com/vatly/vatly-fluent-python?rev=431a2bc14994a19eb8ac8390ab955a3866aaf721" },
+    { name = "vatly-api-python", git = "https://github.com/vatly/vatly-api-python?rev=9535226f050cee0bec75a495babde4b90a8fc30f" },
+    { name = "vatly-fluent-python", git = "https://github.com/vatly/vatly-fluent-python?rev=00ae8c8c7188d8e1a80a58a7f74e5f8dba6c0c44" },
 ]
 
 [package.metadata.requires-dev]
@@ -1784,7 +1784,7 @@ dev = [
 [[package]]
 name = "vatly-fluent-python"
 version = "0.1.0a4"
-source = { git = "https://github.com/vatly/vatly-fluent-python?rev=431a2bc14994a19eb8ac8390ab955a3866aaf721#431a2bc14994a19eb8ac8390ab955a3866aaf721" }
+source = { git = "https://github.com/vatly/vatly-fluent-python?rev=00ae8c8c7188d8e1a80a58a7f74e5f8dba6c0c44#00ae8c8c7188d8e1a80a58a7f74e5f8dba6c0c44" }
 dependencies = [
     { name = "vatly-api-python" },
 ]
