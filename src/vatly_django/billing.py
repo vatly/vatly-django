@@ -23,6 +23,7 @@ from vatly_fluent import (
     subscription_ends_at,
 )
 
+from . import __version__
 from .models import BillingResource, BillingScope, Checkout, CheckoutAttempt, CustomerBinding
 from .storage import ORMDriver, locked_scope
 
@@ -57,7 +58,7 @@ class Billing:
     @asynccontextmanager
     async def fluent(self) -> AsyncIterator[Vatly]:
         async with AsyncVatlyClient(self.key) as api:
-            yield Vatly(
+            vatly = Vatly(
                 self.driver.wiring(
                     api=api,
                     redirect_url_success=getattr(settings, "VATLY_REDIRECT_URL_SUCCESS", ""),
@@ -65,6 +66,11 @@ class Billing:
                     webhook_secret=getattr(settings, "VATLY_WEBHOOK_SECRET", None),
                 )
             )
+            # After Fluent's token; older SDKs have no add_version_string.
+            add = getattr(api, "add_version_string", None)
+            if add is not None:
+                add(f"vatly/vatly-django/{__version__}")
+            yield vatly
 
     def resources(self, billable: Model, kind: str | None = None) -> QuerySet[BillingResource]:
         entity = entity_for(billable)

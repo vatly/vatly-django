@@ -1,5 +1,6 @@
 import itertools
 import json
+import platform
 import time
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
@@ -9,6 +10,8 @@ from uuid import uuid4
 
 import httpx
 import pytest
+import vatly
+import vatly_fluent
 from asgiref.sync import async_to_sync
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
@@ -21,6 +24,7 @@ from vatly.models import Subscription
 from vatly.webhooks import compute_signature_v1
 from vatly_fluent import CheckoutRecord, FluentError, LocalSubscription
 
+import vatly_django
 from vatly_django.billing import Billing, entity_for
 from vatly_django.mixins import BillableMixin
 from vatly_django.models import (
@@ -214,6 +218,24 @@ def test_purchase_key_survives_network_failure_and_is_bound_to_payload(user, moc
     with pytest.raises(FluentError, match="different purchase"):
         billing.checkout(user, "book", idempotency_key=key)
     assert len(calls) == 2
+
+
+def test_user_agent_chains_sdk_fluent_and_django(user, mock_api):
+    calls, responses = mock_api
+    responses.extend([resource("Checkout", id="checkout_a"), resource("Checkout", id="checkout_b")])
+    billing = Billing()
+    billing.checkout(user, "book", idempotency_key=uuid4())
+    billing.checkout(user, "book", idempotency_key=uuid4())
+    expected = " ".join(
+        [
+            f"vatly/vatly-api-python/{vatly.__version__}",
+            f"Python/{platform.python_version()}",
+            f"httpx/{httpx.__version__}",
+            f"vatly/vatly-fluent-python/{vatly_fluent.__version__}",
+            f"vatly/vatly-django/{vatly_django.__version__}",
+        ]
+    )
+    assert [r.headers["User-Agent"] for r in calls] == [expected, expected]
 
 
 @pytest.mark.parametrize(
