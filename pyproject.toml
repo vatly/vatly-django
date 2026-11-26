@@ -29,6 +29,14 @@ dev = [
     "pytest-cov>=7,<8",
 ]
 
+# Until released vatly-api-python and vatly-fluent-python versions ship
+# add_version_string (vatly/vatly-api-python#5, vatly/vatly-fluent-python#5, both merged
+# to main), develop and test against those merge commits. Remove this, pin the
+# releases, and run `uv lock` before releasing.
+[tool.uv.sources]
+vatly-api-python = { git = "https://github.com/vatly/vatly-api-python", rev = "9535226f050cee0bec75a495babde4b90a8fc30f" }
+vatly-fluent-python = { git = "https://github.com/vatly/vatly-fluent-python", rev = "00ae8c8c7188d8e1a80a58a7f74e5f8dba6c0c44" }
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/vatly_django"]
 

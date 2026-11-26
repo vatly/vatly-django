@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Requests name the integration in the `User-Agent`: `vatly/vatly-django/<version>`
+  follows the SDK and Fluent tokens, using the SDK's `add_version_string`
+  (vatly/vatly-api-python#5). With an SDK that lacks it, nothing changes.
+
 ## 0.1.0a5 — 2026-11-25
 
 - `WebhookCall.envelope` stores only the event's `id`, `eventName`, `entityType`,

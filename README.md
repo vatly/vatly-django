@@ -19,7 +19,11 @@ VATLY_CHECKOUTS = {"pro": {"products": [{"id": "subscription_plan_...", "quantit
 Install the latest alpha with `pip install --pre vatly-django`, add
 `path("billing/", include("vatly_django.urls"))`, run `python manage.py migrate`.
 For development, clone and run `.agents/setup`; `uv.lock` pins the exact SDK and
-Fluent versions from PyPI.
+Fluent versions, for now from the branches in `[tool.uv.sources]`
+(see [Development](docs/Development.md)).
+
+Requests send `vatly/vatly-django/<version>` in the `User-Agent`, after the SDK and
+Fluent tokens, when the installed SDK supports `add_version_string`.
 
 ```python
 from uuid import uuid4
